@@ -1,0 +1,28 @@
+@use "../colors" as *;
+
+.loader {
+  width: 100%;
+  height: 45%;
+  position: fixed;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+  align-items: center;
+  animation: Loader 2s ease infinite;
+}
+
+@keyframes Loader {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.container {
+  background-color: rgba(250, 250, 250, 0.5);
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 4;
+}

@@ -1,0 +1,193 @@
+@use "../colors" as *;
+
+.container {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: 99999;
+    top: 0;
+	right: 0;
+    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow: hidden;
+    align-items: center;
+}
+
+.Messagebox {
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 3rem;
+    background-color: white;
+    border-radius: 12px;
+}
+.presenterCon{
+    padding-bottom: 0 !important; 
+}
+.GooglemapCon{
+    width: 45% !important;
+}
+
+.header {
+    width: 100%;
+    height: 38px;
+    background-color: $BannerHeader;
+    display: flex;
+    padding-right: 1em;
+    justify-content: space-between;
+    align-items: center;
+    border-top-right-radius: 12px;
+    border-top-left-radius: 12px;
+
+
+    .letHeader {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+    }
+
+    .crossButton {
+        color: $NavbarTextColor;
+        cursor: pointer;
+    }
+    
+    .crossButton:hover{
+        color: $NavbarTextColor;
+    }
+    .text {
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 600;
+        font-size: 20px;
+        line-height: 27px;
+        color: $dark-charcoal;
+        padding-top: 11px;
+    }
+}
+
+.message ,.langText{
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 27px;
+    text-align: center;
+    color: $dark-charcoal;
+    
+}
+.langText{
+	color: $black;
+	text-align: left !important;
+}
+.reportPopup{
+	.container{
+		z-index: 9999 !important;
+	}
+}
+.iconCon{
+    color: #3668A1;
+    width: 90px;
+    float: right;
+    right: 0;
+    height: 64px;
+    text-align: center;
+    margin: 0;
+	span{
+		display: block;
+		color: red;
+	}
+
+}
+.docText{
+	font-size: 16px;
+	font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+	text-align: center;
+	color: $black;
+
+}
+.yesBtn{
+	text-align: center;
+    background: linear-gradient(90deg, rgba(46, 49, 146, 1) 5%, rgba(27, 255, 255, 1) 200%);
+    color: $NavbarTextColor;
+    border: none;
+    width: auto;
+    min-width: 100px;
+    height: 38px;
+    font-size: 15px;
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+    border-radius: 3px;
+    margin-top: 20px;
+    padding: 8px 15px;
+	margin-left: 20%;
+    display: inline-block;
+}
+  .noBtn{
+	text-align: center;
+    background: linear-gradient(90deg, rgb(235, 47, 75) 5%, rgb(240, 129, 136) 200%);
+    color: $NavbarTextColor;
+    border: none;
+    width: auto;
+    min-width: 100px;
+    height: 38px;
+    font-size: 15px;
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+    border-radius: 3px;
+    margin-top: 20px;
+	margin-left: 2%;
+    padding: 8px 15px;
+    display: inline-block;
+}
+.popupBox{
+    .crossIcon{
+        background: $warning-red;
+        color: $NavbarTextColor;
+        border-radius: 50%;
+        padding: 15px;
+        width: 60px;
+        height: 60px;
+        margin: 25px auto;
+    }
+    .SuccessImg{
+        margin: 22px 0;
+        display: block;
+		p{
+			margin-top: 10px;
+		}
+    }
+}
+.presenterDetails{
+    display: inline-flex;
+    span{
+        font-size: 15px;
+        font-weight: 600;
+        color: rgb(46, 49, 146);
+        padding: 6px 0px 0px 10px;
+        font-family: "Montserrat" !important;
+    }
+}
+.popupContainer{
+    width: 100%;
+    padding: 20px 20px 0;
+}
+@media all and (min-width: 768px) and (max-width: 1023px) {
+    .Messagebox {
+        width: 55%;
+    }
+}
+@media (max-width: 767px) { 
+    .Messagebox {
+        width: 90%;
+    }
+}
