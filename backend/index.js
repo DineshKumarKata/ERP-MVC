@@ -4,7 +4,7 @@ const formData = require('express-form-data');
 const helmet = require('helmet')
 const cors = require('cors');
 const routes = require('./src/routes/index')
-// Initialize MongoDB connection
+// Initialize MongoDB connections
 require('./src/dao/MongooseConfig');
 require("dotenv").config();
 
@@ -56,3 +56,5 @@ process.on('uncaughtException', function (err) {
 app.listen(process.env.PORT, () => { 
     console.log('Server is listening at http://localhost:%s', process.env.PORT); 
 });
+
+

@@ -62,7 +62,8 @@ const StudentAdmissionSchema = new Schema({
     default: Date.now
   }
 }, {
-  timestamps: true  // This will add createdAt and updatedAt fields
+  timestamps: true,  // This will add createdAt and updatedAt fields
+  collection: 'student_adm_regs' // Explicitly set the collection name
 });
 
 // Add any indexes that might be useful
@@ -70,7 +71,9 @@ StudentAdmissionSchema.index({ admission_no: 1 });
 StudentAdmissionSchema.index({ admission_year: 1 });
 StudentAdmissionSchema.index({ primary_email_id: 1 });
 
-// Create and export the model
-const StudentAdmission = mongoose.model('StudentAdmission', StudentAdmissionSchema);
+module.exports = (db) => {
+  return db.model('StudentAdmission', StudentAdmissionSchema);
+};
 
-module.exports = StudentAdmission;
+
+

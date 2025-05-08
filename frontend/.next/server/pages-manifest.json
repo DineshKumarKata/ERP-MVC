@@ -2,7 +2,6 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/landingpage": "pages/landingpage.js",
-  "/seatAllocation": "pages/seatAllocation.js",
-  "/StudentLoginPage": "pages/StudentLoginPage.js"
+  "/StudentLoginPage": "pages/StudentLoginPage.js",
+  "/seatAllocation": "pages/seatAllocation.js"
 }

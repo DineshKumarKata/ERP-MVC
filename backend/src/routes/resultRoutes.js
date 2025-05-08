@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const { verifyjwt } = require("../middleware/authorizationFilter");
-const handlers = require("../middleware/resultHandlerWrapper");
+const resultHandlers = require("../handlers/resultHandlers");
 
-router.post("/save-result", [verifyjwt, handlers.saveResult]);
+router.post("/save", [verifyjwt, resultHandlers.saveResult]);
+router.get("/check-submission", [verifyjwt, resultHandlers.checkSubmission]);
+router.get("/get-results/:testId", [verifyjwt, resultHandlers.getResults]);
 
 module.exports = router;

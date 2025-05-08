@@ -72,4 +72,9 @@ const BranchSchema = new Schema({
   },
 }, {collection: 'prog_branch_ms'});
 
-module.exports = mongoose.model('Branch', BranchSchema);
+module.exports = (db) => {
+  return db.model('Branch', BranchSchema);
+};
+
+
+

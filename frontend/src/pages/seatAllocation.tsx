@@ -8,14 +8,13 @@ import {
   Card,
   Table,
   Spinner,
-  Alert
+  Alert,
 } from "react-bootstrap";
 import { CallingAxios, ShowMessagePopup } from "../GenericFunctions";
 import { GetAllAdmissions } from "../axios";
 import SeatAllocationModal from "./SeatAllocationModal";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-// Update interfaces to match both API response and table display formats
 interface ApiStudent {
   _id: string;
   admission_no: string;
@@ -33,6 +32,11 @@ interface ApiStudent {
   adm_status: number;
   residential_status: string;
   campus_name?: string;
+  academic_concession?: number;
+  scholarships_id?: number;
+  choice1_branch_id?: number;
+  choice2_branch_id?: number;
+  choice3_branch_id?: number;
 }
 
 interface DisplayStudent {
@@ -43,9 +47,14 @@ interface DisplayStudent {
   choice1: string;
   choice2: string;
   choice3: string;
+  choice1_branch_id: number | null;
+  choice2_branch_id: number | null;
+  choice3_branch_id: number | null;
   examType: string;
   examMarks: string;
   deoStatus: string;
+  academic_concession: number;
+  scholarships_id: number | null;
 }
 
 interface SearchParams {
@@ -56,35 +65,52 @@ interface SearchParams {
   toDate: string;
 }
 
+interface BranchOption {
+  branch_id: number;
+  branch_short_name: string;
+}
+
 const SeatAllocation: React.FC = () => {
-  // State management
   const [searchParams, setSearchParams] = useState<SearchParams>({
     admissionYear: "",
     campus: "",
     programGroup: "",
     fromDate: "",
-    toDate: ""
+    toDate: "",
   });
-  
+
   const [students, setStudents] = useState<DisplayStudent[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showResults, setShowResults] = useState<boolean>(true);
-  
-  // Modal state
+
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedStudent, setSelectedStudent] = useState<string>("");
-  
-  // Dropdown options (would be fetched from API in real implementation)
-  const admissionYears = ["2010", "2011", "2012", "2013", "2014", "2015", "2016", 
-                          "2017", "2018", "2019", "2020", "2021", "2022", "2023", 
-                          "2024", "2025"];
-  
+
+  const admissionYears = [
+    "2010",
+    "2011",
+    "2012",
+    "2013",
+    "2014",
+    "2015",
+    "2016",
+    "2017",
+    "2018",
+    "2019",
+    "2020",
+    "2021",
+    "2022",
+    "2023",
+    "2024",
+    "2025",
+  ];
+
   const campuses = [
     "Vignan's Foundation for Science, Technology & Research is a Deemed university",
     "vignan hyderabad off campus",
-    "Vadlamudi ( VFSTR )"
+    "Vadlamudi ( VFSTR )",
   ];
-  
+
   const programs = [
     "B.Tech ___ (BTECH)",
     "B.A (LLB) ___ (BALLB)",
@@ -102,24 +128,23 @@ const SeatAllocation: React.FC = () => {
     "B.Sc ___(BSC)",
     "Diploma ___ (DPO)",
     "MA ___ (MA)",
-    "BBA+MBA ___ (BBAMBA)"
+    "BBA+MBA ___ (BBAMBA)",
   ];
 
-  // Fetch admission data on component mount
+  const [branches, setBranches] = useState<BranchOption[]>([]);
+
   useEffect(() => {
     const fetchAdmissionData = async () => {
       try {
         console.log("Fetching admission data...");
         const response = await CallingAxios(GetAllAdmissions());
         console.log("API Response:", response);
-        
+
         if (response.status === "Success") {
-          // Ensure we have an array to work with
           const apiData = Array.isArray(response.data) ? response.data : [];
           console.log("API Data:", apiData);
 
-          // Map only the required fields from API response data
-          const formattedData: DisplayStudent[] = apiData.map(item => {
+          const formattedData: DisplayStudent[] = apiData.map((item) => {
             console.log("Processing student item:", {
               admission_no: item.admission_no,
               exam_marks: item.exam_marks,
@@ -128,43 +153,67 @@ const SeatAllocation: React.FC = () => {
               choices: {
                 choice1: item.choice1,
                 choice2: item.choice2,
-                choice3: item.choice3
+                choice3: item.choice3,
+                choice1_branch_id: item.choice1_branch_id,
+                choice2_branch_id: item.choice2_branch_id,
+                choice3_branch_id: item.choice3_branch_id,
               },
-              raw_item: item
+              academic_concession: item.academic_concession,
+              scholarships_id: item.scholarships_id,
             });
-            
+
             return {
-              admissionNumber: item.admission_no?.toString() || "NULL",
+              // admissionNumber: item.admission_no?.toString() || "NULL",
+              admissionNumber: item.admission_no || 0,
               studentName: item.student_name || "NULL",
               admissionYear: item.admission_year || "NULL",
               campus: item.campus_name || "NULL",
               choice1: item.choice1 || "NULL",
               choice2: item.choice2 || "NULL",
               choice3: item.choice3 || "NULL",
+              choice1_branch_id: item.choice1_branch_id || null,
+              choice2_branch_id: item.choice2_branch_id || null,
+              choice3_branch_id: item.choice3_branch_id || null,
               examType: item.exam_type || "NULL",
-              examMarks: item.exam_marks !== null && item.exam_marks !== undefined ? 
-                item.exam_marks.toString() : "NULL",
-              deoStatus: "verified"
+              examMarks:
+                item.exam_marks !== null && item.exam_marks !== undefined
+                  ? item.exam_marks.toString()
+                  : "NULL",
+              deoStatus: "verified",
+              academic_concession: item.academic_concession || 0,
+              scholarships_id: item.scholarships_id || null,
             };
           });
 
           console.log("Formatted Data:", formattedData);
           setStudents(formattedData);
-          
+
+          if (response.data.branches) {
+            setBranches(response.data.branches);
+          }
+
           if (formattedData.length === 0) {
             console.log("Warning: No admission records found in the response");
           }
-          
+
           setShowResults(true);
         } else {
-          setStudents([]); // Set empty array on failure
+          setStudents([]);
           console.error("API returned non-success status:", response.status);
-          ShowMessagePopup(false, response.message || "Failed to fetch admission data", "");
+          ShowMessagePopup(
+            false,
+            response.message || "Failed to fetch admission data",
+            ""
+          );
         }
       } catch (error) {
         console.error("Error fetching admission data:", error);
-        setStudents([]); // Set empty array on error
-        ShowMessagePopup(false, "Failed to fetch admission data. Please try again.", "");
+        setStudents([]);
+        ShowMessagePopup(
+          false,
+          "Failed to fetch admission data. Please try again.",
+          ""
+        );
       } finally {
         setLoading(false);
       }
@@ -173,37 +222,40 @@ const SeatAllocation: React.FC = () => {
     fetchAdmissionData();
   }, []);
 
-  // Handle input changes for filtering
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value } = e.target;
-    setSearchParams(prev => ({
+    setSearchParams((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  // Handle allocate button click
   const handleAllocate = (admissionNumber: string) => {
     setSelectedStudent(admissionNumber);
     setShowModal(true);
   };
 
-  // Filter students based on search parameters
-  const filteredStudents = students.length ? students.filter(student => {
-    return (
-      (!searchParams.admissionYear || student.admissionYear === searchParams.admissionYear) &&
-      (!searchParams.campus || student.campus === searchParams.campus) &&
-      (!searchParams.programGroup || student.choice1 === searchParams.programGroup) &&
-      (!searchParams.fromDate || student.admissionYear >= searchParams.fromDate) &&
-      (!searchParams.toDate || student.admissionYear <= searchParams.toDate)
-    );
-  }) : [];
+  const filteredStudents = students.length
+    ? students.filter((student) => {
+        return (
+          (!searchParams.admissionYear ||
+            student.admissionYear === searchParams.admissionYear) &&
+          (!searchParams.campus || student.campus === searchParams.campus) &&
+          (!searchParams.programGroup ||
+            student.choice1 === searchParams.programGroup) &&
+          (!searchParams.fromDate ||
+            student.admissionYear >= searchParams.fromDate) &&
+          (!searchParams.toDate || student.admissionYear <= searchParams.toDate)
+        );
+      })
+    : [];
 
   return (
     <Container fluid>
-      {/* Left Sidebar */}
       <Row>
         <Col md={3} className="bg-light p-4 min-vh-100">
           <div className="sidebar">
@@ -219,64 +271,66 @@ const SeatAllocation: React.FC = () => {
             <h5 className="mb-3">MYACCOUNT</h5>
           </div>
         </Col>
-        
-        {/* Main Content */}
+
         <Col md={9} className="p-4">
           <Card className="mb-4">
             <Card.Body>
               <h2 className="text-center mb-4">Seat Allocation</h2>
-              
+
               <Row>
                 <Col md={6} className="mb-3">
                   <Form.Group controlId="admissionYear">
                     <Form.Label>Admission Year</Form.Label>
-                    <Form.Select 
+                    <Form.Select
                       name="admissionYear"
                       value={searchParams.admissionYear}
-                      onChange={handleInputChange}
-                    >
+                      onChange={handleInputChange}>
                       <option value="">Select Admission Year</option>
-                      {admissionYears.map(year => (
-                        <option key={year} value={year}>{year}</option>
+                      {admissionYears.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
                       ))}
                     </Form.Select>
                   </Form.Group>
                 </Col>
-                
+
                 <Col md={6} className="mb-3">
                   <Form.Group controlId="campus">
                     <Form.Label>Campus</Form.Label>
-                    <Form.Select 
+                    <Form.Select
                       name="campus"
                       value={searchParams.campus}
-                      onChange={handleInputChange}
-                    >
+                      onChange={handleInputChange}>
                       <option value="">Select Campus</option>
-                      {campuses.map(campus => (
-                        <option key={campus} value={campus}>{campus}</option>
+                      {campuses.map((campus) => (
+                        <option key={campus} value={campus}>
+                          {campus}
+                        </option>
                       ))}
                     </Form.Select>
                   </Form.Group>
                 </Col>
               </Row>
-              
+
               <Row>
                 <Col md={6} className="mb-3">
                   <Form.Group controlId="programGroup">
                     <Form.Label>Program Group</Form.Label>
-                    <Form.Select 
+                    <Form.Select
                       name="programGroup"
                       value={searchParams.programGroup}
-                      onChange={handleInputChange}
-                    >
+                      onChange={handleInputChange}>
                       <option value="">Select Program</option>
-                      {programs.map(program => (
-                        <option key={program} value={program}>{program}</option>
+                      {programs.map((program) => (
+                        <option key={program} value={program}>
+                          {program}
+                        </option>
                       ))}
                     </Form.Select>
                   </Form.Group>
                 </Col>
-                
+
                 <Col md={6} className="mb-3">
                   <Form.Group controlId="fromDate">
                     <Form.Label>From Date</Form.Label>
@@ -290,7 +344,7 @@ const SeatAllocation: React.FC = () => {
                   </Form.Group>
                 </Col>
               </Row>
-              
+
               <Row>
                 <Col md={6} className="mb-3">
                   <Form.Group controlId="toDate">
@@ -308,18 +362,14 @@ const SeatAllocation: React.FC = () => {
 
               <Row>
                 <Col className="d-flex justify-content-center">
-                  <Button 
-                    variant="primary" 
-                    className="px-4"
-                  >
+                  <Button variant="primary" className="px-4">
                     Search
                   </Button>
                 </Col>
               </Row>
             </Card.Body>
           </Card>
-          
-          {/* Search Results */}
+
           {showResults && (
             <Card>
               <Card.Body>
@@ -332,7 +382,7 @@ const SeatAllocation: React.FC = () => {
                   </div>
                 ) : (
                   <div>
-                    {students.length > 0 ? (
+                    {filteredStudents.length > 0 ? (
                       <div className="table-responsive">
                         <Table striped bordered hover>
                           <thead>
@@ -351,7 +401,7 @@ const SeatAllocation: React.FC = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {filteredStudents.map(student => (
+                            {filteredStudents.map((student) => (
                               <tr key={student.admissionNumber}>
                                 <td>{student.admissionNumber}</td>
                                 <td>{student.studentName}</td>
@@ -364,11 +414,12 @@ const SeatAllocation: React.FC = () => {
                                 <td>{student.examMarks}</td>
                                 <td>{student.deoStatus}</td>
                                 <td>
-                                  <Button 
-                                    variant="primary" 
+                                  <Button
+                                    variant="primary"
                                     size="sm"
-                                    onClick={() => handleAllocate(student.admissionNumber)}
-                                  >
+                                    onClick={() =>
+                                      handleAllocate(student.admissionNumber)
+                                    }>
                                     Allocate
                                   </Button>
                                 </td>
@@ -381,15 +432,25 @@ const SeatAllocation: React.FC = () => {
                       <Alert variant="info" className="text-center">
                         <Alert.Heading>No Admission Data Found</Alert.Heading>
                         <p>
-                          There are currently no admission records in the system. This could be because:
+                          There are currently no admission records in the system
+                          that are verified by DEO and have seats unallocated.
+                          This could be because:
                         </p>
                         <ul className="list-unstyled">
-                          <li>• No admissions have been added yet</li>
-                          <li>• The selected filters don't match any records</li>
-                          <li>• There might be an issue with the data retrieval</li>
+                          <li>• No admissions have been verified by DEO</li>
+                          <li>
+                            • All verified admissions have seats allocated
+                          </li>
+                          <li>
+                            • The selected filters don't match any records
+                          </li>
+                          <li>
+                            • There might be an issue with the data retrieval
+                          </li>
                         </ul>
                         <p className="mb-0">
-                          Please verify that admission records exist and try again.
+                          Please verify that admission records exist and try
+                          again.
                         </p>
                       </Alert>
                     )}
@@ -401,12 +462,12 @@ const SeatAllocation: React.FC = () => {
         </Col>
       </Row>
 
-      {/* Seat Allocation Modal */}
       <SeatAllocationModal
         show={showModal}
         onHide={() => setShowModal(false)}
         studentAdmissionNumber={selectedStudent}
         students={students}
+        branches={branches}
       />
     </Container>
   );

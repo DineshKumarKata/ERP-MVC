@@ -8,7 +8,6 @@ import axios, { AxiosError } from "axios";
 const BACKEND_URL =
   process.env.BACKEND_URL || "http://localhost:4001/vignanAPI";
 
-
 export const UseStudentRegistration = async (data: any) => {
   console.log(
     "Sending registration data to:",
@@ -638,7 +637,6 @@ export const GetUserDetails = async () => {
 //   }
 // };
 
-
 export const GetQuestionBanks = async () => {
   console.log(
     "Fetching question banks from:",
@@ -648,15 +646,19 @@ export const GetQuestionBanks = async () => {
     const res = await instance.get("/questionbank/getAllQuestionBanks");
     console.log("Full response:", res);
     console.log("Question banks response:", res.data);
-    
+
     // Ensure we have an array of question banks
-    const questionBanks = Array.isArray(res.data) ? res.data :
-                         Array.isArray(res.data.data) ? res.data.data :
-                         Array.isArray(res.data.questionBanks) ? res.data.questionBanks : [];
-    
+    const questionBanks = Array.isArray(res.data)
+      ? res.data
+      : Array.isArray(res.data.data)
+      ? res.data.data
+      : Array.isArray(res.data.questionBanks)
+      ? res.data.questionBanks
+      : [];
+
     return {
       status: "Success",
-      data: questionBanks
+      data: questionBanks,
     };
   } catch (e: any) {
     console.error("Network error details:", {
@@ -677,7 +679,7 @@ export const GetQuestionBanks = async () => {
     return {
       status: "Failure",
       message: errorMessage,
-      data: []
+      data: [],
     };
   }
 };
@@ -697,9 +699,9 @@ export const GetQuestionsByBankId = async (bankId: string) => {
       isArray: Array.isArray(res.data),
       hasDataProperty: !!res.data?.data,
       hasQuestionsProperty: !!res.data?.questions,
-      dataType: typeof res.data
+      dataType: typeof res.data,
     });
-    
+
     // Handle different response structures
     let questions = [];
     if (Array.isArray(res.data)) {
@@ -708,16 +710,19 @@ export const GetQuestionsByBankId = async (bankId: string) => {
       questions = res.data.data;
     } else if (res.data?.questions && Array.isArray(res.data.questions)) {
       questions = res.data.questions;
-    } else if (res.data?.data?.questions && Array.isArray(res.data.data.questions)) {
+    } else if (
+      res.data?.data?.questions &&
+      Array.isArray(res.data.data.questions)
+    ) {
       questions = res.data.data.questions;
     }
-    
+
     console.log("Extracted questions array:", questions);
     console.log("First question sample:", questions[0]);
-    
+
     return {
       status: "Success",
-      data: questions
+      data: questions,
     };
   } catch (e: any) {
     console.error("Error fetching questions:", e);
@@ -725,9 +730,9 @@ export const GetQuestionsByBankId = async (bankId: string) => {
       message: e.message,
       status: e.response?.status,
       data: e.response?.data,
-      config: e.config
+      config: e.config,
     });
-    
+
     let errorMessage = "Failed to fetch questions. Please try again.";
     if (e.response && e.response.data && e.response.data.message) {
       errorMessage = e.response.data.message;
@@ -739,7 +744,7 @@ export const GetQuestionsByBankId = async (bankId: string) => {
     return {
       status: "Failure",
       message: errorMessage,
-      data: []
+      data: [],
     };
   }
 };
@@ -765,23 +770,27 @@ export const GenerateMultiSubjectTest = async (data: any) => {
     // Set up request config with authentication header
     const config = {
       headers: {
-        'Authorization': typeof parsedData.token === 'string' 
-          ? `Bearer ${parsedData.token}`
-          : `Bearer ${parsedData.token.token}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization:
+          typeof parsedData.token === "string"
+            ? `Bearer ${parsedData.token}`
+            : `Bearer ${parsedData.token.token}`,
+        "Content-Type": "application/json",
+      },
     };
 
-    console.log("Sending request with auth token:", config.headers.Authorization);
+    console.log(
+      "Sending request with auth token:",
+      config.headers.Authorization
+    );
     const res = await instance.post("/v1/test/generate-multi", data, config);
     console.log("Test generation response:", res.data);
-    
+
     // Handle different possible response structures
     if (res.data.status === "Success") {
       return {
         status: "Success",
         testId: res.data.testId || res.data.data?.testId,
-        data: res.data.data || res.data
+        data: res.data.data || res.data,
       };
     } else {
       throw new Error(res.data.message || "Failed to generate test");
@@ -794,15 +803,15 @@ export const GenerateMultiSubjectTest = async (data: any) => {
       data: e.response?.data,
       config: e.config,
       url: e.config?.url,
-      baseURL: instance.defaults.baseURL
+      baseURL: instance.defaults.baseURL,
     });
-    
+
     let errorMessage = "Failed to generate test. Please try again.";
     if (e.response?.status === 401) {
       errorMessage = "Your session has expired. Please log in again.";
       // Clear localStorage and redirect to login
       localStorage.clear();
-      const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '/vignan';
+      const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "/vignan";
       window.location.href = `${basePath}/StudentLoginPage`;
     } else if (e.response && e.response.data && e.response.data.message) {
       errorMessage = e.response.data.message;
@@ -811,12 +820,12 @@ export const GenerateMultiSubjectTest = async (data: any) => {
     } else {
       errorMessage = e.message;
     }
-    
+
     return {
       status: "Failure",
       message: errorMessage,
       testId: null,
-      data: null
+      data: null,
     };
   }
 };
@@ -852,25 +861,23 @@ export const GetTestById = async (testId: string) => {
   }
 };
 
-
 /**
- * Fetch all admissions
- * Endpoint: /v1/admission/getAllAdmissions
+ * start an exam
+ * Endpoint: /v1/test/start-exam/:testId
  */
-export const GetAllAdmissions = async () => {
-  console.log("Fetching all admissions from:", "/v1/admission/getAllAdmissions");
+export const StartExam = async (testId: string) => {
+  console.log("Starting exam with ID:", testId);
   try {
-    const res = await instance.get("/v1/admission/getAllAdmissions");
-    console.log("Admissions response:", res.data);
+    const res = await instance.get(`/v1/test/start-exam/${testId}`);
+    console.log("Exam start response:", res.data);
     return {
       status: res.data.status || "Success",
-      data: res.data.data || [],
-      message: res.data.message
+      data: res.data,
     };
   } catch (e: any) {
-    console.error("Error fetching admissions:", e);
-    let errorMessage = "Failed to fetch admissions. Please try again.";
-    if (e.response && e.response.data && e.response.data.message) { 
+    console.error("Error starting exam:", e);
+    let errorMessage = "Failed to start exam. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
       errorMessage = e.response.data.message;
     } else if (e.request) {
       errorMessage = "No response from server. Please check your connection.";
@@ -880,7 +887,473 @@ export const GetAllAdmissions = async () => {
     return {
       status: "Failure",
       message: errorMessage,
-      data: []
+      data: null,
+    };
+  }
+};
+
+/**
+ * Fetch saved responses
+ * Endpoint: /v1/test/exam/responses?testId=:testId
+ */
+export const GetExamResponses = async (testId: string) => {
+  console.log("Fetching saved responses for test ID:", testId);
+  try {
+    const res = await instance.get(`/v1/test/exam/responses?testId=${testId}`);
+    console.log("Saved responses response:", res.data);
+    return {
+      status: res.data.status || "Success",
+      data: res.data,
+    };
+  } catch (e: any) {
+    console.error("Error fetching saved responses:", e);
+    let errorMessage = "Failed to fetch saved responses. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: null,
+    };
+  }
+};
+
+/**
+ * save an exam response
+ * Endpoint: /v1/test/exam/responses/save
+ */
+export const SaveExamResponse = async (data: any) => {
+  console.log("Saving exam response with data:", data);
+  try {
+    const res = await instance.post("/v1/test/exam/responses/save", data);
+    console.log("Exam response save response:", res.data);
+    return {
+      status: res.data.status || "Success",
+      data: res.data,
+    };
+  } catch (e: any) {
+    console.error("Error saving exam response:", e);
+    let errorMessage = "Failed to save exam response. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: null,
+    };
+  }
+};
+
+/**
+ * Delete an exam response
+ * Endpoint: /v1/test/exam/responses/delete
+ */
+export const DeleteExamResponse = async (data: any) => {
+  console.log("Deleting exam response with data:", data);
+  try {
+    const res = await instance.post("/v1/test/exam/responses/delete", data);
+    console.log("Exam response delete response:", res.data);
+    return {
+      status: res.data.status || "Success",
+      data: res.data,
+    };
+  } catch (e: any) {
+    console.error("Error deleting exam response:", e);
+    let errorMessage = "Failed to delete exam response. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: null,
+    };
+  }
+};
+
+/**
+ * save exam result
+ * Endpoint: /v1/test/exam/results/save
+ */
+export const SaveExamResult = async (data: any) => {
+  console.log("Saving exam result with data:", data);
+  try {
+    const res = await instance.post("/v1/test/exam/results/save", data);
+    console.log("Exam result save response:", res.data);
+    return {
+      status: res.data.status || "Success",
+      data: res.data,
+    };
+  } catch (e: any) {
+    console.error("Error saving exam result:", e);
+    let errorMessage = "Failed to save exam result. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: null,
+    };
+  }
+};
+
+/**
+ * Fetch image by reference ID
+ * Endpoint: /v1/test/exam/image/:refId
+ */
+export const GetImageByRefId = async (refId: string) => {
+  console.log("Fetching image with reference ID:", refId);
+  try {
+    const res = await instance.get(`/v1/test/exam/image/${refId}`, {
+      responseType: "blob", // Ensure the response is treated as a Blob
+    });
+    console.log("Image response:", res.data);
+    return {
+      status: "Success",
+      data: res.data, // This will be a Blob
+      message: "Image fetched successfully",
+    };
+  } catch (e: any) {
+    console.error("Error fetching image:", e);
+    let errorMessage = "Failed to fetch image. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: null,
+    };
+  }
+};
+
+/**
+ * Fetch all admissions
+ * Endpoint: /v1/admission/getAllAdmissions
+ */
+export const GetAllAdmissions = async () => {
+  console.log(
+    "Fetching all admissions from:",
+    "/v1/admission/getAllAdmissions"
+  );
+  try {
+    const res = await instance.get("/v1/admission/getAllAdmissions");
+    console.log("Admissions response:", res.data);
+    return {
+      status: res.data.status || "Success",
+      data: res.data.data || [],
+      message: res.data.message,
+      scholarships_id: res.data.scholarships_id || null,
+    };
+  } catch (e: any) {
+    console.error("Error fetching admissions:", e);
+    let errorMessage = "Failed to fetch admissions. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: [],
+      scholarships_id: null,
+    };
+  }
+};
+
+/**
+ * Get seats data for allocation
+ * Endpoint: /v1/admission/seats-data
+ */
+export const GetSeatsData = async (
+  branchId: number,
+  category: string,
+  concessionPercentage: number
+) => {
+  console.log("Fetching seats data from:", "/v1/admission/seats-data");
+  try {
+    const res = await instance.get("/v1/admission/seats-data", {
+      params: {
+        branchId,
+        category,
+        concessionPercentage,
+      },
+    });
+    console.log("Seats data response:", res.data);
+    return {
+      status: res.data.status || "Success",
+      data: res.data.data || {},
+      message: res.data.message,
+    };
+  } catch (e: any) {
+    console.error("Error fetching seats data:", e);
+    let errorMessage = "Failed to fetch seats data. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: {},
+    };
+  }
+};
+
+/**
+ * Check if student exists in student_iradm_details
+ * Endpoint: /v1/admission/checkStudentIRADMDetails
+ */
+export const CheckStudentIRADMDetails = async (admission_no: string) => {
+  console.log("Checking student IRADM details for:", admission_no);
+  try {
+    const res = await instance.get(
+      `/v1/admission/checkStudentIRADMDetails?admission_no=${admission_no}`
+    );
+    console.log("Student IRADM details response:", res.data);
+    return {
+      status: res.data.status || "Success",
+      data: res.data.data || { exists: false, student_category_id: 2 },
+      message: res.data.message,
+    };
+  } catch (e: any) {
+    console.error("Error checking student IRADM details:", e);
+    let errorMessage =
+      "Failed to check student IRADM details. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: { exists: false, student_category_id: 2 },
+    };
+  }
+};
+
+/**
+ * Get fee_category_id for a student/program/seat category
+ * Endpoint: /v1/admission/fee-category-id
+ */
+export const GetFeeCategoryId = async (
+  prgm_id: number,
+  fees_description: string
+) => {
+  console.log(
+    "Fetching fee_category_id from:",
+    "/v1/admission/getFeeCategoryId"
+  );
+  try {
+    const res = await instance.get("/v1/admission/getFeeCategoryId", {
+      params: {
+        prgm_id,
+        fees_description,
+      },
+    });
+    console.log("Fee category id response:", res.data);
+    return {
+      status: res.data.status || "Success",
+      data: res.data.data || {},
+      message: res.data.message,
+    };
+  } catch (e: any) {
+    console.error("Error fetching fee_category_id:", e);
+    let errorMessage = "Failed to fetch fee category id. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: {},
+    };
+  }
+};
+
+/**
+ * Get fee_id for a fee_category_id and program branch
+ * Endpoint: /v1/admission/getFeeId
+ */
+export const GetFeeId = async (
+  fee_category_id: number,
+  prgm_branch_id: number
+) => {
+  console.log("Fetching fee_id from:", "/v1/admission/getFeeId");
+  try {
+    const res = await instance.get("/v1/admission/getFeeId", {
+      params: {
+        fee_category_id,
+        prgm_branch_id,
+      },
+    });
+    console.log("Fee id response:", res.data);
+    return {
+      status: res.data.status || "Success",
+      data: res.data.data || {},
+      message: res.data.message,
+    };
+  } catch (e: any) {
+    console.error("Error fetching fee_id:", e);
+    let errorMessage = "Failed to fetch fee id. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: {},
+    };
+  }
+};
+
+/**
+ * Get fee details (admission and tuition fees) for a college fee ID
+ * Endpoint: /v1/admission/getFeeDetails
+ */
+export const GetFeeDetails = async (colg_fees_fee_id: number) => {
+  console.log("Fetching fee details from:", "/v1/admission/getFeeDetails");
+  try {
+    const res = await instance.get("/v1/admission/getFeeDetails", {
+      params: {
+        colg_fees_fee_id,
+      },
+    });
+    console.log("Fee details response:", res.data);
+
+    // Ensure data is an array, default to empty array if not
+    const data = Array.isArray(res.data.data) ? res.data.data : [];
+
+    return {
+      status: res.data.status || "Success",
+      data,
+      message: res.data.message,
+    };
+  } catch (e: any) {
+    console.error("Error fetching fee details:", e);
+    let errorMessage = "Failed to fetch fee details. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: [],
+    };
+  }
+};
+
+/**
+ * Get concession types for a program
+ * Endpoint: /v1/admission/getConcessionTypes
+ */
+export const GetConcessionTypes = async (prgm_id: number) => {
+  console.log(
+    "Fetching concession types from:",
+    "/v1/admission/getConcessionTypes"
+  );
+  try {
+    const res = await instance.get("/v1/admission/getConcessionTypes", {
+      params: {
+        prgm_id,
+      },
+    });
+    console.log("Concession types response:", res.data);
+    return {
+      status: res.data.status || "Success",
+      data: res.data.data || {},
+      message: res.data.message,
+    };
+  } catch (e: any) {
+    console.error("Error fetching concession types:", e);
+    let errorMessage = "Failed to fetch concession types. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: [],
+    };
+  }
+};
+
+/**
+ * Post admission details
+ * Endpoint: /v1/admission/postAdmissionDetails
+ */
+export const PostAdmissionDetails = async (data: any) => {
+  console.log("Posting admission details:", data);
+  try {
+    const res = await instance.post("/v1/admission/postAdmissionDetails", data);
+    console.log("Admission details posted successfully:", res.data);
+    return {
+      status: res.data.status || "Success",
+      data: res.data.data || {},
+      message: res.data.message,
+    };
+  } catch (e: any) {
+    console.error("Error posting admission details:", e);
+    let errorMessage = "Failed to post admission details. Please try again.";
+    if (e.response && e.response.data && e.response.data.message) {
+      errorMessage = e.response.data.message;
+    } else if (e.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = e.message;
+    }
+    return {
+      status: "Failure",
+      message: errorMessage,
+      data: {},
     };
   }
 };

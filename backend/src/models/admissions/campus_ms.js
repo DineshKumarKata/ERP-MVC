@@ -77,4 +77,8 @@ const CampusSchema = new Schema({
   },
 }, {collection: 'campus_ms'});
 
-module.exports = mongoose.model('Campus', CampusSchema);
+module.exports = (db) => {
+  return db.model('Campus', CampusSchema);
+};
+
+

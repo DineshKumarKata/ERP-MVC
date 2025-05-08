@@ -55,5 +55,8 @@ EntranceExamSchema.index({ exam_id: 1 });
 EntranceExamSchema.index({ programme_id: 1 });
 EntranceExamSchema.index({ admission_year: 1 });
 
-const EntranceExam = mongoose.model('EntranceExam', EntranceExamSchema);
-module.exports = EntranceExam;
+module.exports = (db) => {
+  return db.model('EntranceExam', EntranceExamSchema);
+};
+
+

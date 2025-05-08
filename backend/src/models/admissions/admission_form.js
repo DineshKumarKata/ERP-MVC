@@ -54,5 +54,7 @@ const StudentExamSchema = new Schema({
 // StudentExamSchema.index({ exam_id: 1 });
 // StudentExamSchema.index({ admission_year: 1 });
 
-const StudentExam = mongoose.model('StudentExam', StudentExamSchema);
-module.exports = StudentExam;
+module.exports = (db) => {
+  return db.model('StudentExam', StudentExamSchema);
+};
+

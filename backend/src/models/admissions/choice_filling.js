@@ -7,7 +7,7 @@ const ChoiceFillingSchema = new Schema({
     auto: true,
   },
   admission_no: {
-    type: String, // Stored as string to preserve large numbers and leading zeros
+    type: Number, // Stored as string to preserve large numbers and leading zeros
     required: true,
   },
   adm_year: {
@@ -57,4 +57,9 @@ const ChoiceFillingSchema = new Schema({
   },
 }, {collection: 'choice_filling'});
 
-module.exports = mongoose.model('ChoiceFilling', ChoiceFillingSchema);
+module.exports = (db) => {
+  return db.model('ChoiceFilling', ChoiceFillingSchema);
+};
+
+
+
